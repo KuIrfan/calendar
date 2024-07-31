@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
+    <style>
+        #calendar {
+            max-width: 90%;
+            margin: 0 auto;
+            height: auto;
+        }
+        .container {
+            margin: 100px;
+            max-width: 90%;
+        }
+        .fc {
+            font-family: Arial, sans-serif;
+        }
+        .fc-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+        .fc-toolbar .fc-button {
+            border: none !important;
+            border-radius: 5px !important;
+            font-size: 20px !important;
+            height: 40px !important;
+            width: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            cursor: pointer !important;
+            text-align: center;
+            margin: 0 10px !important;
+            background-color: #007bff !important; 
+            color: #000 !important; 
+        }
+        .fc-toolbar .fc-prev-button .fc-icon::before {
+            content: '<' !important;
+            color: #000 !important; 
+        }
+        .fc-toolbar .fc-next-button .fc-icon::before {
+            content: '>' !important;
+            color: #000 !important; 
+        }
+        .fc-center h2 {
+            font-size: 45px;
+            font-weight: bold;
+            margin: 0 450px;
+        }
+        .fc-day-header {
+            background-color: #f0f0f0;
+            color: #333;
+            font-weight: bold;
+            padding: 10px;
+            height: 50px;
+            font-size: 20px;
+        }
+        .fc-day-header.fc-sat {
+            background-color: #19b1c6;
+        }
+        .fc-day-header.fc-sun {
+            background-color: #ffe0b2;
+        }
+        .fc-day, .fc-widget-content {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            height: 120px;
+        }
+        .fc-day.fc-sat {
+            background-color: #e0f7fa;
+        }
+        .fc-day.fc-sun {
+            background-color: #fff3e0;
+        }
+        .fc-today {
+            background-color: #ffebcd !important;
+        }
+        .fc-event {
+            padding: 0;
+            border: line;
+            border-color: #353434;
+            background-color: #f5f5f5;
+            font-size: 16px;
+            font-weight: bold;
+            color: #000;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .delete-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: red;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            text-align: center;
+            font-size: 14px;
+            cursor: pointer;
+            line-height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div id="calendar"></div>
+    </div>
+    
+    
+    <div id="eventModal" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Event</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="eventForm">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" id="name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="start_time">Start Time</label>
+                            <input type="datetime-local" id="start_time" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="end_time">End Time</label>
+                            <input type="datetime-local" id="end_time" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="event_type">Event Type</label>
+                            <input type="text" id="event_type" class="form-control">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Event</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+   
+    
+    <div id="viewEventModal" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">View Event</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="viewEventForm">
+                        <div class="form-group">
+                            <label for="view_name">Name</label>
+                            <input type="text" id="view_name" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="view_start_time">Start Time</label>
+                            <input type="datetime-local" id="view_start_time" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="view_end_time">End Time</label>
+                            <input type="datetime-local" id="view_end_time" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="view_event_type">Event Type</label>
+                            <input type="text" id="view_event_type" class="form-control">
+                        </div>
+                        <button type="button" class="btn btn-primary" id="updateEvent">Update Event</button>
+                        <button type="button" class="btn btn-danger" id="deleteEvent">Delete Event</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#calendar').fullCalendar({
+                editable: true,
+                events: 'display_event.php',
+                displayEventTime: true,
+                selectable: true,
+                selectHelper: true,
+                select: function(start, end) {
+                    $('#eventModal').modal('show');
+                    $('#eventForm').off('submit').on('submit', function(e) {
+                        e.preventDefault();
+                        var name = $('#name').val();
+                        var start_time = $('#start_time').val();
+                        var end_time = $('#end_time').val();
+                        var event_type = $('#event_type').val();
+
+                        $.ajax({
+                            url: 'save_event.php',
+                            type: 'POST',
+                            data: {name: name, start_time: start_time, end_time: end_time, event_type: event_type},
+                            success: function(response) {
+                                $('#calendar').fullCalendar('refetchEvents');
+                                $('#eventModal').modal('hide');
+                                alert(response);
+                            }
+                        });
+                    });
+                },
+                eventClick: function(event) {
+                    
+                    var startTime = event.start ? moment(event.start).format('YYYY-MM-DDTHH:mm') : '';
+                    var endTime = event.end ? moment(event.end).format('YYYY-MM-DDTHH:mm') : '';
+
+                    console.log('Event Data:', event);
+                    console.log('Formatted Start Time:', startTime);
+                    console.log('Formatted End Time:', endTime);
+
+                    $('#viewEventModal').modal('show');
+                    $('#view_name').val(event.title || '');
+                    $('#view_start_time').val(startTime);
+                    $('#view_end_time').val(endTime);
+                    $('#view_event_type').val(event.event_type || '');
+
+                    $('#updateEvent').off('click').on('click', function() {
+                        var name = $('#view_name').val();
+                        var start_time = $('#view_start_time').val();
+                        var end_time = $('#view_end_time').val();
+                        var event_type = $('#view_event_type').val();
+
+                        $.ajax({
+                            url: 'update_event.php',
+                            type: 'POST',
+                            data: {id: event.id, name: name, start_time: start_time, end_time: end_time, event_type: event_type},
+                            success: function(response) {
+                                $('#calendar').fullCalendar('refetchEvents');
+                                $('#viewEventModal').modal('hide');
+                                alert(response);
+                            }
+                        });
+                    });
+
+                    $('#deleteEvent').off('click').on('click', function() {
+                        if (confirm("Are you sure you want to delete this event?")) {
+                            $.ajax({
+                                url: 'delete_event.php',
+                                type: 'POST',
+                                data: {id: event.id},
+                                success: function(response) {
+                                    $('#calendar').fullCalendar('refetchEvents');
+                                    $('#viewEventModal').modal('hide');
+                                    alert(response);
+                                }
+                            });
+                        }
+                    });
+                },
+                header: {
+                    left: 'prev,next',
+                    center: 'title',
+                    right: ''
+                },
+                timeFormat: 'h:mm A',
+                eventRender: function(event, element) {
+                    var eventText = event.title + '<br>' + moment(event.start).format('h:mm A') + '-' + moment(event.end).format('h:mm A') + '<br>' + event.event_type;
+                    element.html(eventText);
+                }
+            });
+        });
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>
